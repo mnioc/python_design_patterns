@@ -119,9 +119,9 @@ class DriveApplication():
         self._drive = None
 
     def load_drive(self):
-        self.drive_class = self.os_drive_mapping.get(self.os_type, None)
-        assert self.drive_class, ("os drive not found")
-        self._drive = self.drive_class()
+        _drive_class = self.os_drive_mapping.get(self.os_type, None)
+        assert _drive_class, "os drive not found"
+        self._drive = _drive_class()
 
     @property
     def drive(self):
