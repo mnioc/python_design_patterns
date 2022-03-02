@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -----------#
-# 抽象工厂模式 
+# 抽象工厂模式: 为创建一组相关或相互依赖的对象提供一个接口，而且无需指定他们的具体类
 # -----------#
 
 """
@@ -107,21 +107,14 @@ class LinuxDriveFactory(AbstractDriveFactory):
         return LinuxKeyboardDrive()
 
 
-class DriveApplication():
+class DriveApplicationInterface():
     
-    os_drive_mapping = {
-        "linux": LinuxDriveFactory,
-        "window": WindowDriveFactory
-    }
-
-    def __init__(self, os_type):
-        self.os_type = os_type
+    def __init__(self):
         self._drive = None
 
-    def load_drive(self):
-        _drive_class = self.os_drive_mapping.get(self.os_type, None)
-        assert _drive_class, "os drive not found"
-        self._drive = _drive_class()
+    def load_drive(self, drive_class=None):
+        assert drive_class, "os drive not found"
+        self._drive = drive_class()
 
     @property
     def drive(self):
@@ -139,9 +132,28 @@ class DriveApplication():
 
 
 if __name__ == "__main__":
-    os_type = "linux"
-    app = DriveApplication(os_type)
+    # 定义一个驱动程序接口，相当于是一个入口
+    app = DriveApplicationInterface()
+
+    """
+    对于抽象工厂模式下，我们不会去做类似于:
+        d1 = LinuxDriveFactory()
+        d2 = WindowDriveFactory()
+    这样的实例化操作，而是通过我们的一个驱动程序接口去进行实例化
+    
+    这样我们就可以避免在我们的代码中去创建A类、B类、C类、D类。。。因为从逻辑上来说，这些类是相关的
+    """
+    app.load_drive(LinuxDriveFactory)
     app.mouse_drive.click()
     app.mouse_drive.double_click()
     app.keyboard_drive.press()
+
+    """
+    app.load_drive(WindowDriveFactory)
+    app.mouse_drive.click()
+    app.mouse_drive.double_click()
+    app.keyboard_drive.press()
+    """
+
+
 
