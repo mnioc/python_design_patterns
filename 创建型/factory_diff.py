@@ -146,7 +146,7 @@ class HPDriverFactory(MouseDriverFactory):
         self.get_window_dirve_instance().click()
         self.get_linux_dirve_instance().click()
 
-# # 具体工厂： 这里是 Dell 品牌工厂，Dell的鼠标需要进行window、linux的适配
+#  具体工厂： 这里是 Dell 品牌工厂，Dell的鼠标需要进行window、linux的适配
 class DellDriverFactory(MouseDriverFactory):
 
     def get_window_dirve_instance(self) -> 'DellWindowMouseDriver':
@@ -159,37 +159,37 @@ class DellDriverFactory(MouseDriverFactory):
         self.get_window_dirve_instance().click()
         self.get_linux_dirve_instance().click()
 
-
+# 抽象产品1: window 鼠标驱动
 class WindowMouseDriver:
 
     def click(self):
         print("Window环境下鼠标执行了单击操作")
 
-
+# 具体产品：HP厂商 window 鼠标驱动
 class HPWindowMouseDriver(WindowMouseDriver):
 
     def click(self):
         print("Window环境下HP品牌鼠标执行了单击操作")
 
-
+# 具体产品：Dell厂商 window 鼠标驱动
 class DellWindowMouseDriver(WindowMouseDriver):
 
     def click(self):
         print("Window环境下Dell品牌鼠标执行了单击操作")
 
-
+# 抽象产品2: Linux 鼠标驱动
 class LinuxMouseDriver:
 
     def click(self):
         print("Linux环境下鼠标执行了单击操作")
 
-
+# 具体产品：HP厂商 Linux 鼠标驱动
 class HPLinuxMouseDriver(LinuxMouseDriver):
 
     def click(self):
         print("Linux环境下HP品牌鼠标执行了单击操作")
 
-
+# 具体产品：Dell厂商 Linux 鼠标驱动
 class DellLinuxMouseDriver(LinuxMouseDriver):
 
     def click(self):
