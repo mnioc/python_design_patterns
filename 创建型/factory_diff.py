@@ -65,16 +65,13 @@ class SimpleDriverFactory:
         elif option == "dell":
             drive = DellMouseDriver()
         return drive
-    
-    def run_check(self, option):
-        drive = self.get_drive(option)
-        drive.click()
+
 
 class Application:
 
     def run_check(self):
-        SimpleDriverFactory.run_check("dell")
-        SimpleDriverFactory.run_check("hp")
+        SimpleDriverFactory.get_drive("dell").click()
+        SimpleDriverFactory.get_drive("hp").click()
 
 
 
