@@ -18,7 +18,7 @@
     1、WindowDriveFactory: window 操作系统的鼠标键盘驱动适配
     2、LinuxDriveFactory: Linux 操作系统的鼠标键盘驱动适配
 
-当有一天我们的程序需要去适配 maxos 的时候，我们直接去创建一个新类: MaxosDriveFactory 即可，无需更改其他现有代码
+当有一天我们的程序需要去适配 maxos 的时候，我们直接去创建一个新类: MacOSDriveFactory 即可，无需更改其他现有代码
 """
 
 from abc import ABC, abstractmethod

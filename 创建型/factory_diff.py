@@ -1,13 +1,13 @@
 # !/usr/bin/env python 
 # -*- coding: utf-8 -*-
 
-# -----------#
+# ----------------
 # 几种工厂模式的比较
-# -----------#
+# ----------------
 from abc import ABC, abstractmethod
 
 
-# 业务场景：A公司是一家做驱动检测的公司，那么就需要一个执行驱动检测的程序，早期的时候，公司业务不大，规模很小，所以就只做了鼠标与键盘驱动
+# 业务场景：A公司是一家做给不同的电脑厂商外设做驱动检测的公司，那么就需要一个执行驱动检测的程序，早期的时候，公司业务不大，规模很小，所以就只做鼠标驱动
 # [1]-------------------------------------------无工厂---------------------------------------------------
 # 早期的代码非常简单，也非常的清晰
 
@@ -15,26 +15,32 @@ class MouseDriver:
     """鼠标驱动"""
 
     def click(self):
-        print("执行了单击操作")
+        print("鼠标执行了单击操作")
+
+
+class HPMouseDriver:
+    """HP牌鼠标驱动"""
+
+    def click(self):
+        print("HP品牌鼠标执行了单击操作")
     
-    def double_click(self):
-        print("执行了双击操作")
+
+class DellMouseDriver:
+    """Dell牌鼠标驱动"""
+
+    def click(self):
+        print("Dell品牌鼠标执行了单击操作")
 
 
-class KeyboardDrive:
-    """键盘驱动"""
+class Application():
 
-    def press_enter(self):
-        print("按下了enter键")
+    def run_check(self):
+        hp_mouse_drive = HPMouseDriver()
+        hp_mouse_drive.click()
 
+        dell_mouse_drive = DellMouseDriver()
+        dell_mouse_drive.click()
 
-# if __name__ == "__main__":
-#     mouse_drive = MouseDriver()
-#     mouse_drive.click()
-#     mouse_drive.double_click()
-
-#     keyboard_drive = KeyboardDrive()
-#     keyboard_drive.press_enter()
 
 
 
@@ -42,126 +48,166 @@ class KeyboardDrive:
 # 后面类开始变多了，代码开始变得臃肿，并且希望能通过一个统一的入口去管理
 # 于是，程序员们决定对这部分代码进行重构，经过商讨决定采用 静态工厂方法(Static Factory Method)模式 去进行重构
 
-class DriverFactory:
+class SimpleDriverFactory:
     """
     工厂方法包含了一个可以实例化所有驱动的方法，业务代码不需要再去实例化不同的驱动类了，实现了责任分离
     当客户类需要的时候，委托工厂类创建驱动类的对象
     NOTE
     但是!!! 它违背了开闭原则!!!
-    当我们新加入其他驱动的时候，我们不得不去更改该工厂类的方法以适配新的需求。
+    当我们新加入其他厂商驱动的时候，我们不得不去更改该工厂类的方法以适配新的需求。
     """
 
     @staticmethod
     def get_drive(option):
         drive = None
-        if option == "mouse":
-            drive = MouseDriver()
-        elif option == "keyboard":
-            drive = KeyboardDrive()
+        if option == "hp":
+            drive = HPMouseDriver()
+        elif option == "dell":
+            drive = DellMouseDriver()
         return drive
+    
+    def run_check(self, option):
+        drive = self.get_drive(option)
+        drive.click()
+
+class Application:
+
+    def run_check(self):
+        SimpleDriverFactory.run_check("dell")
+        SimpleDriverFactory.run_check("hp")
 
 
-# if __name__ == "__main__":
-#     mouse_drive = DriverFactory.get_drive("mouse")
-#     mouse_drive.click()
-#     mouse_drive.double_click()
 
-#     keyboard_drive = DriverFactory.get_drive("keyboard")
-#     keyboard_drive.press_enter()
 
 
 # [3]-------------------------------------------工厂方法模式---------------------------------------------------
 # 还是刚才做驱动检测的那家公司，由于业务线的发展，他们有了更多的客户，但同时也不得不进行新一轮的重构，这一次的重构是因为什么呢？
-# 是因为他们需要对不同操作系统环境下的驱动进行检测，这个时候该如何对代码进行重构呢？
+# 是因为他们每次新加入厂商检测方法的时候，都需要去改动简单工厂里面的 if else 语句，并且if 语句越来越多，拓展性实在是太差了。
 
-class DriverFactory(ABC):
+
+class MouseDriverFactory(ABC):
 
     @abstractmethod
-    def create_mouse_drive(self) -> MouseDriver:
-        raise NotImplementedError('`create_mouse_drive()` must be implemented.')
+    def get_dirve_instance(self) -> MouseDriver:
+        raise NotImplementedError('`get_dirve_instance()` must be implemented.')
     
-    @abstractmethod
-    def create_keyboard_drive(self) -> MouseDriver:
-        raise NotImplementedError('`create_keyboard_drive()` must be implemented.')
-
     def execute_check(self):
-        mouse_dirve = self.create_mouse_drive()
+        mouse_dirve = self.get_dirve_instance()
         mouse_dirve.click()
-        mouse_dirve.double_click()
 
-        keyboard_drive = self.create_keyboard_drive()
-        keyboard_drive.press_enter()
-        
 
-class WindowDriverFactory(DriverFactory):
+class HPMouseDriverFactory(MouseDriverFactory):
 
-    def create_mouse_drive(self) -> 'WindowMouseDriver':
-        return WindowMouseDriver()
+     def get_dirve_instance(self) -> HPMouseDriver:
+         return HPMouseDriver()
+
+
+class DellMouseDriverFactory(MouseDriverFactory):
+
+     def get_dirve_instance(self) -> DellMouseDriver:
+         return DellMouseDriver()
+
+
+class Application():
+
+    def run_check(self):
+        DellMouseDriverFactory().execute_check
+        HPMouseDriverFactory().execute_check
+
+
+
+
+# [4]-------------------------------------------抽象工厂模式---------------------------------------------------
+# 还是刚才做驱动检测的那家公司，随着业务的发展，跨平台的需求应运而生，于是他们需要去对mac、linux、window不同的操作系统进行兼容
+
+# 抽象工厂，声明了一组能返回不同抽象产品的方法，例如：window鼠标驱动和linux鼠标驱动同属于鼠标驱动这一系列
+class MouseDriverFactory(ABC):
+
+    @abstractmethod
+    def get_window_dirve_instance(self) -> MouseDriver:
+        raise NotImplementedError('`get_window_dirve_instance()` must be implemented.')
     
-    def create_keyboard_drive(self) -> 'WindowKeyboardDriver':
-        return WindowKeyboardDriver()
-
-
-class WindowMouseDriver(MouseDriver):
-
-    def click(self):
-        print("window 鼠标执行了单击操作")
+    @abstractmethod
+    def get_linux_dirve_instance(self) -> MouseDriver:
+        raise NotImplementedError('`get_linux_dirve_instance()` must be implemented.')
     
-    def double_click(self):
-        print("window 鼠标执行了双击操作")
+    @abstractmethod
+    def execute_check(self) -> None:
+        pass
 
 
-class WindowKeyboardDriver(KeyboardDrive):
+# 具体工厂： 这里是 HP 品牌工厂，HP的鼠标需要进行window、linux的适配
+class HPDriverFactory(MouseDriverFactory):
 
-    def press_enter(self):
-        print("window 键盘按下了enter键")
-
-
-class LinuxDriverFactory(DriverFactory):
-
-    def create_mouse_drive(self) -> 'LinuxMouseDriver':
-        return LinuxMouseDriver()
+    def get_window_dirve_instance(self) -> 'HPWindowMouseDriver':
+        return HPWindowMouseDriver()
     
-    def create_keyboard_drive(self) -> 'LinuxKeyboardDriver':
-        return LinuxKeyboardDriver()
-
-
-class LinuxMouseDriver(MouseDriver):
-
-    def click(self):
-        print("Linux 鼠标执行了单击操作")
+    def get_linux_dirve_instance(self) -> 'HPLinuxMouseDriver':
+        return HPLinuxMouseDriver()
     
-    def double_click(self):
-        print("Linux 鼠标执行了双击操作")
+    def execute_check(self):
+        self.get_window_dirve_instance().click()
+        self.get_linux_dirve_instance().click()
 
+# # 具体工厂： 这里是 Dell 品牌工厂，Dell的鼠标需要进行window、linux的适配
+class DellDriverFactory(MouseDriverFactory):
 
-class LinuxKeyboardDriver(KeyboardDrive):
-
-    def press_enter(self):
-        print("Linux 键盘按下了enter键")
-
-
-class DriverApp:
+    def get_window_dirve_instance(self) -> 'DellWindowMouseDriver':
+        return DellWindowMouseDriver()
     
-    def __init__(self, os_type):
-        
-        self.driver = None
-        if os_type == "window":
-            self.driver = WindowDriverFactory()
-        elif os_type == "linux":
-            self.driver = LinuxDriverFactory()
-        
-        assert self.driver, "driver must not None"
+    def get_linux_dirve_instance(self) -> 'DellLinuxMouseDriver':
+        return DellLinuxMouseDriver()
 
     def execute_check(self):
-        return self.driver.execute_check()
+        self.get_window_dirve_instance().click()
+        self.get_linux_dirve_instance().click()
 
 
-if __name__ == "__main__":
-    DriverApp("linux").execute_check()
+class WindowMouseDriver:
+
+    def click(self):
+        print("Window环境下鼠标执行了单击操作")
 
 
-# -------------------------------------------抽象工厂模式---------------------------------------------------
-# 还是刚才做驱动检测的那家公司，由于业务线的发展，他们有了更多的客户，但同时也不得不进行新一轮的重构，这一次的重构是因为什么呢？
-# 原来是市面上有很多的制作鼠标、键盘的厂商，他们希望能够使用他们的驱动检测程序给自己家制作的鼠标，键盘做检测
+class HPWindowMouseDriver(WindowMouseDriver):
+
+    def click(self):
+        print("Window环境下HP品牌鼠标执行了单击操作")
+
+
+class DellWindowMouseDriver(WindowMouseDriver):
+
+    def click(self):
+        print("Window环境下Dell品牌鼠标执行了单击操作")
+
+
+class LinuxMouseDriver:
+
+    def click(self):
+        print("Linux环境下鼠标执行了单击操作")
+
+
+class HPLinuxMouseDriver(LinuxMouseDriver):
+
+    def click(self):
+        print("Linux环境下HP品牌鼠标执行了单击操作")
+
+
+class DellLinuxMouseDriver(LinuxMouseDriver):
+
+    def click(self):
+        print("Linux环境下Dell品牌鼠标执行了单击操作")
+
+
+class Application:
+
+    def __init__(self):
+        self._driver_factory = None
+    
+    def load_driver_factory(self, driver_factory_class):
+        return driver_factory_class()
+    
+    def run_check(self):
+        self.load_driver_factory(HPDriverFactory).execute_check()
+        self.load_driver_factory(DellDriverFactory).execute_check()
 
