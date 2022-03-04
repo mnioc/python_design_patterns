@@ -29,10 +29,10 @@ class Product:
     def __str__(self):
         return f"name: {self.name}, developer: {self.developer}, version: {self.version}"
     
-    def deepcopy(self):
+    def deepcopy(self) -> 'Product':
         return copy.deepcopy(self)
     
-    def copy(self):
+    def copy(self) -> 'Product':
         return copy.copy(self)
 
 
