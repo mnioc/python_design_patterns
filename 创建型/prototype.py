@@ -26,7 +26,7 @@ class Product:
         self.content = content
         self.version = version or '0.1.0'
     
-    def __str__(self):
+    def __str__(self) -> str:
         return f"name: {self.name}, developer: {self.developer}, version: {self.version}"
     
     def deepcopy(self) -> 'Product':
