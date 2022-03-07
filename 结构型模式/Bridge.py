@@ -7,62 +7,110 @@
 # ------------------#
 
 """
-桥接模式的关注点在于多个相关的类如何组合，例如下面我们要做的一个社交平台
-我们可以调用qq发消息、也可以调用微信发消息，客户端有两种
-我们可以发送图片信息、也可以发送文字信息，也可以发送转账信息，信息类型有三种
-那么假设我们使用单一的类去实现的话：需要 2*3中组合类，这样类就太多了
+桥接模式的关注点在于多个相关的类如何组合，生活中最常见的软件案例就是支付了，例如我们使用某团、超市收银等等
+他们都做了聚合支付，就是我们可以选择的支付方式有：微信支付、支付宝支付、银联支付
+然后我们的验证方式又可以支持密码验证、指纹验证、人脸识别认证
+那么，假如我们采用传统的组合类的方式，一共需要写 3 * 3 = 9 个组合类
+    1. 微信指纹支付
+    2. 微信密码支付
+    3. 支付宝人脸识别支付
+    ......
+当我们又出现新的支付方式或者验证方式的时候，我么还需要不断的增加新类，这样就会非常的冗余，使用桥接模式就能解决这个问题
 """
 
 
+# ---------------------------------------------------------------------------------------------
+# 原始代码可能是这样的, 非常的不优雅
+
+def pay(pay, pay_type):
+    if pay == "alipay":
+        if pay_type == "face":
+            ...
+        elif pay_type == "password":
+            ...
+        elif pay_type == "touch":
+            ...
+    elif pay == "wechat_pay":       
+        if pay_type == "face":
+            ...
+        elif pay_type == "password":
+            ...
+        elif pay_type == "touch":
+            ...
+
+
+
+# ---------------------------------------------------------------------------------------------
+# 采用桥接模式
+
 from abc import ABC, abstractmethod
 
-class MsgClient:
+
+class IPayType:
 
     @abstractmethod
-    def send_msg_to(self, msg, to_user):
-        raise NotImplementedError('`send_msg_to()` must be implemented.')
+    def pay(self):
+        raise NotImplementedError('`pay()` must be implemented.')
 
 
-class QQClient(MsgClient):
-
-    def send_msg_to(self, msg, to_user):
-        print(f"【QQ消息】hello，{to_user}， {msg}")
-
-
-class WechatClient(MsgClient):
-
-    def send_msg_to(self, msg, to_user):
-        print(f"【微信消息】hello，{to_user}， {msg}")
+    @abstractmethod
+    def pay_check(self):
+        raise NotImplementedError('`pay_check()` must be implemented.')
 
 
-class MsgClientHandle:
+class FacePay(IPayType):
 
-    def __init__(self, msg_client: MsgClient) -> None:
-        self.msg_client = msg_client
+    def pay_check(self):
+        print("人脸识别校验通过")
     
-    def send(self, msg, to_user):
-        self.msg_client.send_msg_to(msg, to_user)
+    def pay_to(self, user, money):
+        print(f"向{user}支付{money}元")
 
 
-class TransferMsg(MsgClientHandle):
+class TouchPay(IPayType):
 
-    def send(self, msg, to_user):
-        msg = msg + "【转账信息，只能使用微信客户端发送】"
-        super().send(msg, to_user)
+    def pay_check(self):
+        print("指纹识别校验通过")
+    
+    def pay_to(self, user, money):
+        print(f"向{user}支付{money}元")
 
 
-class RedPacketMsg(MsgClientHandle):
+class IPayClient(IPayType):
 
-    def send(self, msg, to_user):
-        msg = msg + "【QQ红包，只能使用QQ客户端发送】"
-        super().send(msg, to_user)
+    def __init__(self, pay_type: IPayType) -> None:
+        self.pay_type = pay_type
+
+    def pay(self, user: str, money: float):
+        self.pay_type.pay_check()
+        self.pay_type.pay_to(user, money)
+
+
+class AliPay(IPayClient):
+
+    def pay(self, user: str, money: float):
+        print("正在使用支付宝支付...")
+        return super().pay(user, money)
+
+
+class WechatPay(IPayClient):
+
+    def pay(self, user: str, money: float):
+        print("正在使用微信支付...")
+        return super().pay(user, money)
 
 
 class Application:
 
     def run(self):
-        qq = QQClient()
-        msg_client = RedPacketMsg(qq)
-        msg_client.send("给你发了一个QQ红包，快去QQ领取", "user1")
+        AliPay(FacePay()).pay("王记小笼包", 20)
+
 
 Application().run()
+
+# output
+"""
+正在使用支付宝支付...
+人脸识别校验通过
+向王记小笼包支付20元
+"""
