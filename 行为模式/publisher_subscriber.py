@@ -10,3 +10,13 @@
 当手机不够卖的时候通知: 告诉消费者手机库存不多了尽量不要来、告诉手机供应商赶紧送货过来
 当手机太多的时候通知: 告诉消费者手机库存很多快来买、告诉手机供应商先少送
 """
+
+class PhoneStoryPublisher:
+  def __init__(self):
+    pass
+  def register(self):
+    pass
+  def unregister(self):
+    pass
+  def notifyAll(self):
+    pass
