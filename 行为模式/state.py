@@ -108,3 +108,11 @@ class Application:
         context.change_to("close")
 
 Application().run()
+
+# output
+"""
+状态更改为: close, 原状态为: None
+状态更改为: open, 原状态为: close
+状态更改为: run, 原状态为: open
+【ERROR】无法更改状态，当前状态为: run, 只允许更改的目标状态为: stop
+"""
